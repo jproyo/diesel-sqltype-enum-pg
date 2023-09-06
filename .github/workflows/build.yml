@@ -1,4 +1,4 @@
-name: [BUILD] - Diesel Enum Pg Macro Crate
+name: BUILD - Diesel Enum Pg Macro Crate
 
 on:
   push:

@@ -1,4 +1,4 @@
-name: [RELEASE] - Diesel Enum Pg Macro Crate
+name: RELEASE - Diesel Enum Pg Macro Crate
 
 on:
   release:
