@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-rust:
-    uses: .github/workflows/common-pipeline.yml
+    uses: ./.github/workflows/common-pipeline.yml
     secrets: inherit
   publish-crate:
     runs-on: ubuntu-latest
