@@ -1,3 +1,7 @@
+![Build](https://github.com/jproyo/diesel-sqltype-enum-pg/actions/workflows/build.yml/badge.svg)
+![Release](https://github.com/jproyo/diesel-sqltype-enum-pg/actions/workflows/release.yml/badge.svg)
+![crates.io](https://img.shields.io/crates/v/diesel_sqltype_enum_pg.svg)
+
 # Diesel Enum Derivation for `FromSql` and `ToSql`
 
 This procedural macro simplifies the process of generating Diesel `FromSql` and `ToSql` instances for enums with a specific `SqlType`. It is designed for use with Diesel and Postgres, utilizing `ToString` and `FromStr` traits as the base for conversion. This macro generates the necessary boilerplate code for handling enum conversions between Rust and SQL.
