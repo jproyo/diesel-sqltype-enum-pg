@@ -1,15 +1,17 @@
 #![doc = include_str!("../README.md")]
 use proc_macro::TokenStream;
+use proc_macro2::Ident;
+use proc_macro_error::*;
 use quote::quote;
 use syn::punctuated::Punctuated;
 use syn::token::Eq;
-use syn::{parse_macro_input, DataEnum, DeriveInput};
+use syn::ItemEnum;
 
 /// This procedural Macro generates diesel FromSql and ToSql Instances for Enum
 ///
 /// # Example howto use `FromToSql`
-/// ```
 ///
+/// ```no_run
 /// pub mod schema {
 ///     pub mod sql_types {
 ///         #[derive(diesel::sql_types::SqlType)]
@@ -25,7 +27,7 @@ use syn::{parse_macro_input, DataEnum, DeriveInput};
 /// use quote::quote;
 /// use std::io::Write;
 /// use std::str::FromStr;
-/// use enum_diesel_macros::FromToSql;
+/// use diesel_sqltype_enum_pg::FromToSql;
 /// use schema::sql_types::MyEntityEnumSqlType;
 /// use strum_macros::{Display, EnumString};
 ///
@@ -44,20 +46,18 @@ use syn::{parse_macro_input, DataEnum, DeriveInput};
 /// [`MyEntityEnum`] should either implement [`FromStr`] or [`EnumString`] which is better if you
 /// can.
 ///
+#[proc_macro_error]
 #[proc_macro_derive(FromToSql, attributes(fromtosql))]
 pub fn describe(input: TokenStream) -> TokenStream {
-    let DeriveInput {
-        data, ident, attrs, ..
-    } = parse_macro_input!(input);
-
-    match data {
-        syn::Data::Enum(DataEnum { .. }) => {}
-        _ => {
-            panic!("Only supported for enum type")
-        }
+    let enum_typ = match syn::parse2::<ItemEnum>(input.into()) {
+        Ok(attrs) => attrs,
+        Err(err) => return err.to_compile_error().into(),
     };
 
-    let binding = attrs
+    let ident = enum_typ.ident.clone();
+
+    let binding = enum_typ
+        .attrs
         .iter()
         .filter(|a| a.path().is_ident("fromtosql"))
         .flat_map(|a| {
@@ -78,9 +78,13 @@ pub fn describe(input: TokenStream) -> TokenStream {
 
     let att = match binding.first() {
         Some(idnt) => idnt,
-        None => panic!("`companion` attribute not found"),
+        None => abort!(enum_typ, error_message()),
     };
 
+    generate_from_to_sql(att.clone(), ident.clone())
+}
+
+fn generate_from_to_sql(att: Ident, ident: Ident) -> TokenStream {
     let output = quote! {
          impl ::diesel::serialize::ToSql<#att, ::diesel::pg::Pg> for #ident {
              fn to_sql<'b>(&'b self, out: &mut ::diesel::serialize::Output<'b, '_, ::diesel::pg::Pg>) -> ::diesel::serialize::Result {
@@ -99,6 +103,19 @@ pub fn describe(input: TokenStream) -> TokenStream {
             }
         }
     };
-
     output.into()
+}
+
+fn error_message() -> &'static str {
+    "`fromtosql` attribute not found.\n \
+    Please add #[fromtosql(sql_type = MyEntityEnumSqlType)] to your enum \n\n\
+    Example:\n\n \
+    #[derive(Debug, PartialEq, EnumString, Display, FromToSql)]\n \
+    #[fromtosql(sql_type = MyEntityEnumSqlType)]\n \
+    enum MyEntityEnum { \n\
+    \t  #[strum(serialize = \"ONE\")]\n \
+    \t  EnumOne, \n\
+    \t  #[strum(serialize = \"TWO\")]\n \
+    \t  EnumTwo,\n \
+    } "
 }

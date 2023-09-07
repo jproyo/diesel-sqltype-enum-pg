@@ -1,8 +1,8 @@
 [package]
 name = "diesel_sqltype_enum_pg"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2021"
-license-file = "LICENSE"
+license = "MIT"
 readme = "README.md"
 repository = "https://github.com/jproyo/diesel-sqltype-enum-pg"
 keywords = ["diesel", "postgres", "sqltype", "enum", "macro"]
@@ -13,12 +13,13 @@ authors = ["Juan Pablo Royo Sales <juanpablo.royo@gmail.com>"]
 
 [lib]
 proc-macro = true
+doctest = false
 
 [dependencies]
 diesel = { version = "2.1", features = ["postgres"] }
+proc-macro2 = "1.0"
+proc-macro-error = "1.0"
+quote = "1.0"
 strum = "0.25"
 strum_macros = "0.25"
 syn = { version = "2.0", features = ["full"] }
-quote = "1.0"
-proc-macro2 = "1.0"
-
